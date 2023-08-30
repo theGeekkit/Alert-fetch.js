@@ -31,6 +31,7 @@ async function run() {
     // console.log(expirationDate, currentDate);
     if (
       !referencedIds.includes(feature.id) &&
+      feature.properties.status === "Actual" &&
       feature.properties.messageType !== "Cancel" &&
       expirationDate > currentDate
     ) {
