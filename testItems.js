@@ -1,12 +1,11 @@
 const fs = require("fs");
-const { features } = require("process");
-urgentImmediate = {};
+let readyToSend = [];
+let alertedFeaturedIds = [];
+
+
 async function findReferencedIds(obj) {
   const referencedIds = [];
-  urgentImmediate = obj.features.filter(
-    (feature) => feature.urgency === "Immediate"
-  );
-  // console.log(urgentImmediate);
+    // console.log(urgentImmediate);
   obj.features.forEach((feature) => {
     feature.properties.references.forEach((reference) => {
       if (!referencedIds.includes(reference["@id"])) {
@@ -27,7 +26,7 @@ async function run() {
   const referencedIds = await findReferencedIds(obj);
 
   // console.log(referencedIds);
-  const notReferencedFeatures = [];
+  const activeFeatures = [];
   obj.features.forEach((feature) => {
     const expirationDate = new Date(feature.properties.expires);
     // console.log(expirationDate, currentDate);
@@ -36,18 +35,59 @@ async function run() {
       feature.properties.status === "Actual" &&
       feature.properties.messageType !== "Cancel" &&
       expirationDate > currentDate &&
-      urgentImmediate
+      feature.properties.urgency === "Immediate"
     ) {
-      notReferencedFeatures.push(feature);
+      activeFeatures.push(feature);
     }
   });
-  console.log("its here",notReferencedFeatures);
+  console.log("its here", activeFeatures);
   fs.writeFileSync(
-    "notReferencedFeatures.json",
-    JSON.stringify(notReferencedFeatures)
+    "activeFeatures.json",
+    JSON.stringify(activeFeatures)
   ); //list of active alert for the end user
   //run through all of those not referenced features. Run your notify logic, as a console log. Keep track of those you have notified
   //iteratively process all of the files. mimic the process of getting file updates
+
+    /*
+
+
+    loop through activeFeatures (feature) {
+
+      if(feature needs to be alerted) {
+        if(feature has not been alerted and feature reference have not been alerted) {
+          console.log(feature)//// e.g. pretend that we alerted
+          add feature id to the alerted list
+
+        }
+      }
+
+
+    }
+
+
+    */
+
+
+
+
+
+
+}
+
+async function readyRun() {
+  const readyRun = await findReferencedIds(obj);
+
+  const moreDat = fs.readFileSync(
+    "readyToSend.json",
+    JSON.stringify(readyToSend)
+  );
+  const betterObj = JSON.parse(moreDat);
+
+  betterObj.features.forEach((feature) => {
+    if (feature.properties.severity === "Severe") {
+      readyToSend.push(feature);
+    }
+  });
 }
 
 run().catch((error) => {
