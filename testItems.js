@@ -2,10 +2,9 @@ const fs = require("fs");
 let readyToSend = [];
 let alertedFeaturedIds = [];
 
-
 async function findReferencedIds(obj) {
   const referencedIds = [];
-    // console.log(urgentImmediate);
+  // console.log(urgentImmediate);
   obj.features.forEach((feature) => {
     feature.properties.references.forEach((reference) => {
       if (!referencedIds.includes(reference["@id"])) {
@@ -41,14 +40,11 @@ async function run() {
     }
   });
   console.log("its here", activeFeatures);
-  fs.writeFileSync(
-    "activeFeatures.json",
-    JSON.stringify(activeFeatures)
-  ); //list of active alert for the end user
+  fs.writeFileSync("activeFeatures.json", JSON.stringify(activeFeatures)); //list of active alert for the end user
   //run through all of those not referenced features. Run your notify logic, as a console log. Keep track of those you have notified
   //iteratively process all of the files. mimic the process of getting file updates
 
-    /*
+  /*
 
 
     loop through activeFeatures (feature) {
@@ -67,28 +63,38 @@ async function run() {
 
     */
 
-
-
-
-
-
-}
-
-async function readyRun() {
-  const readyRun = await findReferencedIds(obj);
-
-  const moreDat = fs.readFileSync(
-    "readyToSend.json",
-    JSON.stringify(readyToSend)
-  );
-  const betterObj = JSON.parse(moreDat);
-
-  betterObj.features.forEach((feature) => {
-    if (feature.properties.severity === "Severe") {
-      readyToSend.push(feature);
+  for (const feature of activeFeatures) {
+    if (
+      feature.properties.severity === "Severe" &&
+      !alertedFeaturedIds.includes(feature.id) &&
+      feature.properties.references.every(
+        (reference) => !alertedFeaturedIds.includes(reference["@id"])
+      )
+    ) {
+      console.log(feature); // Alert the feature
+      alertedFeaturedIds.push(feature.id);
+      feature.properties.references.forEach((reference) => {
+        alertedFeaturedIds.push(reference["@id"]);
+      });
     }
-  });
+  }
+
+  fs.writeFileSync("readyToSend.json", JSON.stringify(readyToSend));
 }
+
+// const readyRun = await activeFeatures(obj);
+
+// const moreDat = fs.readFileSync(
+//   "readyToSend.json",
+//   JSON.stringify(readyToSend)
+// );
+// const betterObj = JSON.parse(moreDat);
+
+// betterObj.features.forEach((feature) => {
+//   if (feature.properties.severity === "Severe") {
+//     readyToSend.push(feature);
+//   }
+// });
 
 run().catch((error) => {
   console.error(error);
