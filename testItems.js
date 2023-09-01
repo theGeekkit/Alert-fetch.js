@@ -35,7 +35,9 @@ async function run() {
       feature.properties.messageType !== "Cancel" &&
       expirationDate > currentDate &&
       feature.properties.urgency === "Immediate"
-    ) {
+    )
+      console.log(typeof activeFeatures[0]);
+    {
       activeFeatures.push(feature);
     }
   });
@@ -53,34 +55,34 @@ async function run() {
     (feature) => !readyToSendIds.has(feature.id)
   );
 
-  fs.writeFileSync("readyToSend.json", JSON.stringify(filteredSevereOrExtremeFeatures));
+  fs.writeFileSync(
+    "readyToSend.json",
+    JSON.stringify(filteredSevereOrExtremeFeatures)
+  );
 }
-
-
-
 
 run().catch((error) => {
   console.error(error);
 });
 
-async function calculateActiveFeatures(obj, currentDate) {
-  return new Promise((resolve) => {
-    const activeFeatures = [];
-    obj.features.forEach((feature) => {
-      const expirationDate = new Date(feature.properties.expires);
-      if (
-        !referencedIds.includes(feature.id) &&
-        feature.properties.status === "Actual" &&
-        feature.properties.messageType !== "Cancel" &&
-        expirationDate > currentDate &&
-        feature.properties.urgency === "Immediate"
-      ) {
-        activeFeatures.push(feature);
-      }
-    });
-    resolve(activeFeatures);
-  });
-}
+// async function calculateActiveFeatures(obj, currentDate) {
+//   return new Promise((resolve) => {
+//     const activeFeatures = [];
+//     obj.features.forEach((feature) => {
+//       const expirationDate = new Date(feature.properties.expires);
+//       if (
+//         !referencedIds.includes(feature.id) &&
+//         feature.properties.status === "Actual" &&
+//         feature.properties.messageType !== "Cancel" &&
+//         expirationDate > currentDate &&
+//         feature.properties.urgency === "Immediate"
+//       ) {
+//         activeFeatures.push(feature);
+//       }
+//     });
+//     resolve(activeFeatures);
+//   });
+// }
 
 // async function run() {
 //   const dat = fs.readFileSync("first_update.json");
@@ -111,10 +113,10 @@ async function calculateActiveFeatures(obj, currentDate) {
 //     JSON.stringify(filteredSevereOrExtremeFeatures)
 //   );
 
-  //run through all of those not referenced features. Run your notify logic, as a console log. Keep track of those you have notified
-  //iteratively process all of the files. mimic the process of getting file updates
+//run through all of those not referenced features. Run your notify logic, as a console log. Keep track of those you have notified
+//iteratively process all of the files. mimic the process of getting file updates
 
-  /*
+/*
 
 
     loop through activeFeatures (feature) {
