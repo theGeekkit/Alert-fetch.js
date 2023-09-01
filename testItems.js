@@ -65,37 +65,38 @@ async function run() {
 
   for (const feature of activeFeatures) {
     if (
-      feature.properties.severity === "Severe" &&
+      (feature.properties.severity === "Severe" ||
+        feature.properties.severity === "Extreme") &&
       !alertedFeaturedIds.includes(feature.id) &&
       feature.properties.references.every(
-        (reference) => !alertedFeaturedIds.includes(reference["@id"])
-      )
+        (reference) => !alertedFeaturedIds.includes(reference)
+      ) &&
+      !readyToSend.some((existingFeature) => existingFeature.id === feature.id)
     ) {
       console.log(feature); // Alert the feature
       alertedFeaturedIds.push(feature.id);
       feature.properties.references.forEach((reference) => {
-        alertedFeaturedIds.push(reference["@id"]);
+        alertedFeaturedIds.push(reference);
       });
+      readyToSend.push(feature);
     }
   }
-
   fs.writeFileSync("readyToSend.json", JSON.stringify(readyToSend));
+
+  // const readyRun = await activeFeatures(obj);
+
+  // const moreDat = fs.readFileSync(
+  //   "readyToSend.json",
+  //   JSON.stringify(readyToSend)
+  // );
+  // const betterObj = JSON.parse(moreDat);
+
+  // betterObj.features.forEach((feature) => {
+  //   if (feature.properties.severity === "Severe") {
+  //     readyToSend.push(feature);
+  //   }
+  // });
 }
-
-// const readyRun = await activeFeatures(obj);
-
-// const moreDat = fs.readFileSync(
-//   "readyToSend.json",
-//   JSON.stringify(readyToSend)
-// );
-// const betterObj = JSON.parse(moreDat);
-
-// betterObj.features.forEach((feature) => {
-//   if (feature.properties.severity === "Severe") {
-//     readyToSend.push(feature);
-//   }
-// });
-
 run().catch((error) => {
   console.error(error);
 });
