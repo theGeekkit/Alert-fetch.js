@@ -58,24 +58,58 @@ async function run() {
 
 
 
+
 run().catch((error) => {
   console.error(error);
 });
 
+async function calculateActiveFeatures(obj, currentDate) {
+  return new Promise((resolve) => {
+    const activeFeatures = [];
+    obj.features.forEach((feature) => {
+      const expirationDate = new Date(feature.properties.expires);
+      if (
+        !referencedIds.includes(feature.id) &&
+        feature.properties.status === "Actual" &&
+        feature.properties.messageType !== "Cancel" &&
+        expirationDate > currentDate &&
+        feature.properties.urgency === "Immediate"
+      ) {
+        activeFeatures.push(feature);
+      }
+    });
+    resolve(activeFeatures);
+  });
+}
 
-  // const readyRun = await activeFeatures(obj);
+// async function run() {
+//   const dat = fs.readFileSync("first_update.json");
+//   const obj = JSON.parse(dat);
+//   const currentDate = new Date("2023-08-04T11:50:00-05:00");
 
-  // const moreDat = fs.readFileSync(
-  //   "readyToSend.json",
-  //   JSON.stringify(readyToSend)
-  // );
-  // const betterObj = JSON.parse(moreDat);
+//   const referencedIds = await findReferencedIds(obj);
 
-  // betterObj.features.forEach((feature) => {
-  //   if (feature.properties.severity === "Severe") {
-  //     readyToSend.push(feature);
-  //   }
-  // });
+//   // Calculate active features asynchronously
+//   const activeFeatures = await calculateActiveFeatures(obj, currentDate);
+
+//   console.log("its here", activeFeatures);
+//   fs.writeFileSync("activeFeatures.json", JSON.stringify(activeFeatures)); //list of active alert for the end user
+
+//   const severeOrExtremeFeatures = activeFeatures.filter(
+//     (feature) =>
+//       feature.properties.severity === "Severe" ||
+//       feature.properties.severity === "Extreme"
+//   );
+
+//   const readyToSendIds = new Set(readyToSend.map((feature) => feature.id));
+//   const filteredSevereOrExtremeFeatures = severeOrExtremeFeatures.filter(
+//     (feature) => !readyToSendIds.has(feature.id)
+//   );
+
+//   fs.writeFileSync(
+//     "readyToSend.json",
+//     JSON.stringify(filteredSevereOrExtremeFeatures)
+//   );
 
   //run through all of those not referenced features. Run your notify logic, as a console log. Keep track of those you have notified
   //iteratively process all of the files. mimic the process of getting file updates
