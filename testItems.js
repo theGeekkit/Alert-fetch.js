@@ -50,7 +50,7 @@ async function run() {
       feature.properties.severity === "Extreme"
   );
 
-  const alertedIds = new Set(readyToSend.map((feature) => feature.id));
+  const alertedIds = new Set(alertsThatNeedToBeNotified.map((feature) => feature.id));
   const filteredSevereOrExtremeFeatures = severeOrExtremeFeatures.filter(
     (feature) => {
       const featureId = feature.id;
@@ -62,7 +62,7 @@ async function run() {
   );
 
   fs.writeFileSync(
-    "readyToSend.json",
+    "alertsThatNeedToBeNotified.json",
     JSON.stringify(filteredSevereOrExtremeFeatures)
   );
 }
