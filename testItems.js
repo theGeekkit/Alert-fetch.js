@@ -64,7 +64,9 @@ async function run() {
         : [];
 
       // Check if either the feature ID or any of the reference IDs are in previousAlertedIds
-      return ![featureId, ...referenceIds].some((id) => previousAlertedIds.has(id));
+      return ![featureId, ...referenceIds].some((id) =>
+        previousAlertedIds.has(id)
+      );
     }
   );
 
@@ -72,9 +74,12 @@ async function run() {
     "shouldAlert.json",
     JSON.stringify(filteredSevereOrExtremeFeatures)
   );
-  function notifyAlert(feature, alertedIds) {
+
+  function notifyAlert(feature, previousAlertedIds) {
     // Display feature.properties.event to the user
     console.log("Alert Event:", feature.properties.event);
+    console.log("Alert Description:", feature.properties.description);
+    console.log("Alert Headline:", feature.properties.headline);
 
     // Save featureId to alertedIds
     previousAlertedIds.add(feature.id);
@@ -86,6 +91,12 @@ async function run() {
       });
     }
   }
+
+  const alertShowData = fs.readFileSync("shouldAlert.json");
+  const alertShow = JSON.parse(alertShowData);
+  alertShow.forEach((alert) => {
+    notifyAlert(alert, alertedIds);
+  });
 }
 
 run().catch((error) => {
