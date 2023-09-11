@@ -50,9 +50,15 @@ async function run() {
       feature.properties.severity === "Extreme"
   );
 
-  const readyToSendIds = new Set(readyToSend.map((feature) => feature.id));
+  const alertedIds = new Set(readyToSend.map((feature) => feature.id));
   const filteredSevereOrExtremeFeatures = severeOrExtremeFeatures.filter(
-    (feature) => !readyToSendIds.has(feature.id)
+    (feature) => {
+      const featureId = feature.id;
+      const referenceIds = feature.references.map((reference) => reference.id);
+
+      // Check if either the feature ID or any of the reference IDs are in alertedIds
+      return ![featureId, ...referenceIds].some((id) => alertedIds.has(id));
+    }
   );
 
   fs.writeFileSync(
@@ -65,72 +71,3 @@ run().catch((error) => {
   console.error(error);
 });
 
-// async function calculateActiveFeatures(obj, currentDate) {
-//   return new Promise((resolve) => {
-//     const activeFeatures = [];
-//     obj.features.forEach((feature) => {
-//       const expirationDate = new Date(feature.properties.expires);
-//       if (
-//         !referencedIds.includes(feature.id) &&
-//         feature.properties.status === "Actual" &&
-//         feature.properties.messageType !== "Cancel" &&
-//         expirationDate > currentDate &&
-//         feature.properties.urgency === "Immediate"
-//       ) {
-//         activeFeatures.push(feature);
-//       }
-//     });
-//     resolve(activeFeatures);
-//   });
-// }
-
-// async function run() {
-//   const dat = fs.readFileSync("first_update.json");
-//   const obj = JSON.parse(dat);
-//   const currentDate = new Date("2023-08-04T11:50:00-05:00");
-
-//   const referencedIds = await findReferencedIds(obj);
-
-//   // Calculate active features asynchronously
-//   const activeFeatures = await calculateActiveFeatures(obj, currentDate);
-
-//   console.log("its here", activeFeatures);
-//   fs.writeFileSync("activeFeatures.json", JSON.stringify(activeFeatures)); //list of active alert for the end user
-
-//   const severeOrExtremeFeatures = activeFeatures.filter(
-//     (feature) =>
-//       feature.properties.severity === "Severe" ||
-//       feature.properties.severity === "Extreme"
-//   );
-
-//   const readyToSendIds = new Set(readyToSend.map((feature) => feature.id));
-//   const filteredSevereOrExtremeFeatures = severeOrExtremeFeatures.filter(
-//     (feature) => !readyToSendIds.has(feature.id)
-//   );
-
-//   fs.writeFileSync(
-//     "readyToSend.json",
-//     JSON.stringify(filteredSevereOrExtremeFeatures)
-//   );
-
-//run through all of those not referenced features. Run your notify logic, as a console log. Keep track of those you have notified
-//iteratively process all of the files. mimic the process of getting file updates
-
-/*
-
-
-    loop through activeFeatures (feature) {
-
-      if(feature needs to be alerted) {
-        if(feature has not been alerted and feature reference have not been alerted) {
-          console.log(feature)//// e.g. pretend that we alerted
-          add feature id to the alerted list
-
-        }
-      }
-
-
-    }
-
-
-    */
