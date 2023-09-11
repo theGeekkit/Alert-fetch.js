@@ -1,6 +1,6 @@
 const fs = require("fs");
 let shouldAlert = [];
-let alertedFeaturedIds = [];
+let previousAlertedIds = new Set();
 
 async function findReferencedIds(obj) {
   const referencedIds = [];
