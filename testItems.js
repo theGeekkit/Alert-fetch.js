@@ -46,7 +46,7 @@ async function run() {
       activeFeatures.push(feature);
     }
   });
-  console.log("its here", activeFeatures);
+  // console.log("its here", activeFeatures);
   fs.writeFileSync("activeFeatures.json", JSON.stringify(activeFeatures)); //list of active alert for the end user
 
   const severeOrExtremeFeatures = activeFeatures.filter(
@@ -63,8 +63,8 @@ async function run() {
         ? feature.properties.references.map((reference) => reference.id)
         : [];
 
-      // Check if either the feature ID or any of the reference IDs are in alertedIds
-      return ![featureId, ...referenceIds].some((id) => alertedIds.has(id));
+      // Check if either the feature ID or any of the reference IDs are in previousAlertedIds
+      return ![featureId, ...referenceIds].some((id) => previousAlertedIds.has(id));
     }
   );
 
@@ -77,12 +77,12 @@ async function run() {
     console.log("Alert Event:", feature.properties.event);
 
     // Save featureId to alertedIds
-    alertedIds.add(feature.id);
+    previousAlertedIds.add(feature.id);
 
     // Save reference IDs to alertedIds
     if (feature.properties.references) {
       feature.properties.references.forEach((reference) => {
-        alertedIds.add(reference["@id"]);
+        previousAlertedIds.add(reference["@id"]);
       });
     }
   }
