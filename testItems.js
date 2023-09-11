@@ -1,16 +1,21 @@
 const fs = require("fs");
-let readyToSend = [];
+let shouldAlert = [];
 let alertedFeaturedIds = [];
 
 async function findReferencedIds(obj) {
   const referencedIds = [];
   // console.log(urgentImmediate);
   obj.features.forEach((feature) => {
-    feature.properties.references.forEach((reference) => {
-      if (!referencedIds.includes(reference["@id"])) {
-        referencedIds.push(reference["@id"]);
-      }
-    });
+    if (
+      feature.properties.references &&
+      feature.properties.references.length > 0
+    ) {
+      feature.properties.references.forEach((reference) => {
+        if (!referencedIds.includes(reference["@id"])) {
+          referencedIds.push(reference["@id"]);
+        }
+      });
+    }
   });
 
   return referencedIds;
@@ -50,11 +55,13 @@ async function run() {
       feature.properties.severity === "Extreme"
   );
 
-  const alertedIds = new Set(alertsThatNeedToBeNotified.map((feature) => feature.id));
+  const alertedIds = new Set(shouldAlert.map((feature) => feature.id));
   const filteredSevereOrExtremeFeatures = severeOrExtremeFeatures.filter(
     (feature) => {
       const featureId = feature.id;
-      const referenceIds = feature.references.map((reference) => reference.id);
+      const referenceIds = feature.properties.references
+        ? feature.properties.references.map((reference) => reference.id)
+        : [];
 
       // Check if either the feature ID or any of the reference IDs are in alertedIds
       return ![featureId, ...referenceIds].some((id) => alertedIds.has(id));
@@ -62,12 +69,25 @@ async function run() {
   );
 
   fs.writeFileSync(
-    "alertsThatNeedToBeNotified.json",
+    "shouldAlert.json",
     JSON.stringify(filteredSevereOrExtremeFeatures)
   );
+  function notifyAlert(feature, alertedIds) {
+    // Display feature.properties.event to the user
+    console.log("Alert Event:", feature.properties.event);
+
+    // Save featureId to alertedIds
+    alertedIds.add(feature.id);
+
+    // Save reference IDs to alertedIds
+    if (feature.properties.references) {
+      feature.properties.references.forEach((reference) => {
+        alertedIds.add(reference["@id"]);
+      });
+    }
+  }
 }
 
 run().catch((error) => {
   console.error(error);
 });
-
